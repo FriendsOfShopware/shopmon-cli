@@ -69,7 +69,11 @@ func (c *HTTPTelemetryClient) SendAndParseResponse(payload *Payload) (map[string
 	if err != nil {
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: Failed to close response body: %v\n", err)
+		}
+	}()
 
 	// Check response
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {

@@ -5,7 +5,6 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
@@ -251,8 +250,8 @@ func TestHTTPTelemetryClient_SendAndParseResponse(t *testing.T) {
 func TestNewHTTPTelemetryClient(t *testing.T) {
 	t.Run("default URL and no token", func(t *testing.T) {
 		// Ensure env vars are not set
-		os.Unsetenv("SHOPMON_BASE_URL")
-		os.Unsetenv("SHOPMON_DEPLOY_TOKEN")
+		t.Setenv("SHOPMON_BASE_URL", "")
+		t.Setenv("SHOPMON_DEPLOY_TOKEN", "")
 
 		client := NewHTTPTelemetryClient()
 		assert.Equal(t, "https://shopmon.fos.gg", client.BaseURL)
@@ -262,26 +261,22 @@ func TestNewHTTPTelemetryClient(t *testing.T) {
 	})
 
 	t.Run("custom URL from environment", func(t *testing.T) {
-		os.Setenv("SHOPMON_BASE_URL", "http://custom.example.com")
-		defer os.Unsetenv("SHOPMON_BASE_URL")
+		t.Setenv("SHOPMON_BASE_URL", "http://custom.example.com")
 
 		client := NewHTTPTelemetryClient()
 		assert.Equal(t, "http://custom.example.com", client.BaseURL)
 	})
 
 	t.Run("auth token from environment", func(t *testing.T) {
-		os.Setenv("SHOPMON_DEPLOY_TOKEN", "my-secret-token")
-		defer os.Unsetenv("SHOPMON_DEPLOY_TOKEN")
+		t.Setenv("SHOPMON_DEPLOY_TOKEN", "my-secret-token")
 
 		client := NewHTTPTelemetryClient()
 		assert.Equal(t, "my-secret-token", client.AuthToken)
 	})
 
 	t.Run("both URL and token from environment", func(t *testing.T) {
-		os.Setenv("SHOPMON_BASE_URL", "http://staging.example.com")
-		os.Setenv("SHOPMON_DEPLOY_TOKEN", "staging-token-456")
-		defer os.Unsetenv("SHOPMON_BASE_URL")
-		defer os.Unsetenv("SHOPMON_DEPLOY_TOKEN")
+		t.Setenv("SHOPMON_BASE_URL", "http://staging.example.com")
+		t.Setenv("SHOPMON_DEPLOY_TOKEN", "staging-token-456")
 
 		client := NewHTTPTelemetryClient()
 		assert.Equal(t, "http://staging.example.com", client.BaseURL)

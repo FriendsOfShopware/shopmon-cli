@@ -37,7 +37,9 @@ func (s *Service) Run(args []string) error {
 
 	// Print the output to stdout (transparent execution)
 	fmt.Print(result.Output)
-	os.Stdout.Sync()
+	if err := os.Stdout.Sync(); err != nil {
+		fmt.Fprintf(os.Stderr, "\nWarning: Failed to flush stdout: %v\n", err)
+	}
 
 	// Read composer.json if it exists
 	composerData, err := s.ComposerReader.ReadComposerData("composer.json")
