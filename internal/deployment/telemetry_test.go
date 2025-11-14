@@ -196,6 +196,7 @@ func TestHTTPTelemetryClient_SendAndParseResponse(t *testing.T) {
 		server := startTestServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			receivedAuth = r.Header.Get("Authorization")
 			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"status":"ok"}`))
 		}))
 
 		client := &HTTPTelemetryClient{
