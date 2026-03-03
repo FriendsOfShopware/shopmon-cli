@@ -19,9 +19,10 @@ builds:
     dir: .
 
 archives:
-  - builds:
+  - ids:
       - shopmon-cli
-    format: tar.gz
+    formats:
+      - tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE*
@@ -29,6 +30,19 @@ archives:
 
 checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+
+dockers_v2:
+  - id: shopmon-cli
+    ids:
+      - shopmon-cli
+    dockerfile: Dockerfile.goreleaser
+    images:
+      - "ghcr.io/friendsofshopware/shopmon-cli"
+    tags:
+      - "{{ .Tag }}"
+    platforms:
+      - linux/amd64
+      - linux/arm64
 
 changelog:
   sort: desc
