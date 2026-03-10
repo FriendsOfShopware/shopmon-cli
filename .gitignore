@@ -1,3 +1,4 @@
 /.gocache
-shopmon-cli
+/shopmon-cli
 /composer.lock
+/vendor

@@ -1,0 +1,52 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+namespace ShopmonCli\Internal;
+
+use Composer;
+use RuntimeException;
+
+use function array_shift;
+use function class_exists;
+use function fwrite;
+
+use const STDERR;
+
+(function (): never {
+    if (!class_exists(Composer\InstalledVersions::class, false)) {
+        $loaded = false;
+        foreach ([__DIR__ . '/../../../../autoload.php', __DIR__ . '/../vendor/autoload.php'] as $file) {
+            if (file_exists($file)) {
+                require $file;
+                $loaded = true;
+                break;
+            }
+        }
+
+        if (!$loaded) {
+            fwrite(STDERR, "Error: Composer autoloader not found. Run 'composer install' first.\n");
+            exit(1);
+        }
+    }
+
+    require __DIR__ . '/../internal.php';
+
+    try {
+        $version = namespace\get_version();
+        $architecture = namespace\detect_architecture();
+        $platform = namespace\detect_platform($architecture);
+
+        $archiveName = namespace\build_archive_name($version, $platform['os'], $platform['arch']);
+        $executable = namespace\ensure_binary($version, $archiveName, __DIR__);
+
+        $args = $_SERVER['argv'];
+        array_shift($args);
+
+        namespace\execute($executable, $args);
+    } catch (RuntimeException $e) {
+        fwrite(STDERR, "Error: {$e->getMessage()}\n");
+        exit(1);
+    }
+})();
