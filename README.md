@@ -12,6 +12,9 @@ A command-line tool for monitoring and managing Shopware applications with deplo
 
 ```bash
 composer require frosh/shopmon-cli
+
+# Downloads on the fly shopmon-cli and executes the command
+vendor/bin/shopmon-cli deploy -- <command>
 ```
 
 ### Docker
