@@ -54,7 +54,7 @@ use const STDERR;
  */
 function get_version(): string
 {
-    $version = InstalledVersions::getPrettyVersion('friendsofshopware/shopmon-cli');
+    $version = InstalledVersions::getPrettyVersion('frosh/shopmon-cli');
     if ($version === null) {
         throw new RuntimeException('Could not determine shopmon-cli package version.');
     }
