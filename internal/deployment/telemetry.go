@@ -152,6 +152,7 @@ func BuildPayload(result *ExecutionResult, command string, composerData map[stri
 	shopId, _ := strconv.Atoi(os.Getenv("SHOPMON_SHOP_ID"))
 	return &Payload{
 		ShopId:           shopId,
+		Name:             os.Getenv("SHOPMON_DEPLOYMENT_NAME"),
 		Command:          command,
 		ReturnCode:       result.ReturnCode,
 		StartDate:        result.StartDate,
