@@ -17,8 +17,6 @@ func Run(args []string) error {
 		return fmt.Errorf("failed to execute command: %w", err)
 	}
 
-	fmt.Print(result.Output)
-
 	composerData, err := ReadComposerData("composer.json")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "\nWarning: Failed to read composer.json: %v\n", err)
