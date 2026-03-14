@@ -2,12 +2,14 @@ package deployment
 
 import (
 	"bytes"
+	"io"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
 )
 
-// Execute runs a command and captures its output
+// Execute runs a command and streams its output to the terminal while capturing it
 func Execute(command string) (*ExecutionResult, error) {
 	parts := strings.Fields(command)
 	if len(parts) == 0 {
@@ -17,8 +19,8 @@ func Execute(command string) (*ExecutionResult, error) {
 	cmd := exec.Command(parts[0], parts[1:]...)
 
 	var outputBuffer bytes.Buffer
-	cmd.Stdout = &outputBuffer
-	cmd.Stderr = &outputBuffer
+	cmd.Stdout = io.MultiWriter(os.Stdout, &outputBuffer)
+	cmd.Stderr = io.MultiWriter(os.Stderr, &outputBuffer)
 
 	startTime := time.Now()
 	err := cmd.Run()
