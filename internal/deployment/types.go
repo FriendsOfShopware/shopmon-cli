@@ -3,6 +3,7 @@ package deployment
 // Payload represents the deployment telemetry data sent to the monitoring service
 type Payload struct {
 	ShopId           int                    `json:"shop_id"`
+	Name             string                 `json:"name,omitempty"`
 	Command          string                 `json:"command"`
 	ReturnCode       int                    `json:"return_code"`
 	StartDate        string                 `json:"start_date"`

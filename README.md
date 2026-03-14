@@ -43,6 +43,7 @@ COPY --from=ghcr.io/friendsofshopware/shopmon-cli:0.0.6 /shopmon-cli /usr/local/
 - `SHOPMON_BASE_URL`: Override the default monitoring service URL (default: `https://shopmon.fos.gg`)
 - `SHOPMON_API_KEY`: Authorization token for the monitoring service (required, sent as Bearer token)
 - `SHOPMON_SHOP_ID`: Shop ID to include in telemetry
+- `SHOPMON_DEPLOYMENT_NAME`: Custom name for the deployment (if not set, the server generates a random name)
 - `SHOPMON_DEPLOYMENT_VERSION_REFERENCE`: Override the version reference (defaults to `git rev-parse HEAD`)
 
 ```bash
