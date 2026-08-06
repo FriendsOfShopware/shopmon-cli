@@ -30,7 +30,7 @@ func NewTelemetryClient() *TelemetryClient {
 	}
 
 	return &TelemetryClient{
-		BaseURL:   baseURL,
+		BaseURL:   strings.TrimRight(baseURL, "/"),
 		AuthToken: os.Getenv("SHOPMON_API_KEY"),
 		HTTPClient: &http.Client{
 			Timeout: 30 * time.Second,
@@ -39,8 +39,8 @@ func NewTelemetryClient() *TelemetryClient {
 }
 
 // SendAndParseResponse sends the telemetry payload, uploads output to the presigned URL, and returns the parsed response
-func (c *TelemetryClient) SendAndParseResponse(payload *Payload, output string) (map[string]interface{}, error) {
-	url := c.BaseURL + "/trpc/cli.createDeployment"
+func (c *TelemetryClient) SendAndParseResponse(payload *Payload, output string) (*Response, error) {
+	url := c.BaseURL + "/api/cli/deployments"
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
@@ -74,29 +74,18 @@ func (c *TelemetryClient) SendAndParseResponse(payload *Payload, output string) 
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	// tRPC returns {"result": {"data": <data>}}
-	var trpcResponse map[string]interface{}
-	if err := json.Unmarshal(body, &trpcResponse); err != nil {
+	var data Response
+	if err := json.Unmarshal(body, &data); err != nil {
 		return nil, fmt.Errorf("failed to parse response JSON: %w", err)
 	}
 
-	var data map[string]interface{}
-	if result, ok := trpcResponse["result"].(map[string]interface{}); ok {
-		if d, ok := result["data"].(map[string]interface{}); ok {
-			data = d
-		}
-	}
-	if data == nil {
-		data = trpcResponse
-	}
-
-	if uploadURL, ok := data["upload_url"].(string); ok && uploadURL != "" {
-		if err := uploadOutput(c.HTTPClient, uploadURL, output); err != nil {
+	if data.UploadURL != "" {
+		if err := uploadOutput(c.HTTPClient, data.UploadURL, output); err != nil {
 			fmt.Fprintf(os.Stderr, "\nWarning: Failed to upload deployment output: %v\n", err)
 		}
 	}
 
-	return data, nil
+	return &data, nil
 }
 
 // uploadOutput zstd-compresses the output and PUTs it to the presigned S3 URL
@@ -147,18 +136,39 @@ func getVersionReference() string {
 	return strings.TrimSpace(string(output))
 }
 
+// EnvironmentID reads the target environment ID, preferring the current env var
+// name and falling back to the legacy SHOPMON_SHOP_ID for older setups.
+func EnvironmentID() int {
+	for _, key := range []string{"SHOPMON_ENVIRONMENT_ID", "SHOPMON_SHOP_ID"} {
+		if id, err := strconv.Atoi(os.Getenv(key)); err == nil && id > 0 {
+			return id
+		}
+	}
+	return 0
+}
+
 // BuildPayload creates a telemetry payload from execution result and composer data
 func BuildPayload(result *ExecutionResult, command string, composerData map[string]interface{}) *Payload {
-	shopId, _ := strconv.Atoi(os.Getenv("SHOPMON_SHOP_ID"))
-	return &Payload{
-		ShopId:           shopId,
+	payload := &Payload{
+		EnvironmentId:    EnvironmentID(),
 		Name:             os.Getenv("SHOPMON_DEPLOYMENT_NAME"),
 		Command:          command,
 		ReturnCode:       result.ReturnCode,
 		StartDate:        result.StartDate,
 		EndDate:          result.EndDate,
 		ExecutionTime:    result.ExecutionTime,
-		Composer:         composerData,
 		VersionReference: getVersionReference(),
 	}
+
+	// The API stores composer as a jsonb column and expects a JSON-encoded string.
+	if len(composerData) > 0 {
+		if encoded, err := json.Marshal(composerData); err == nil {
+			composer := string(encoded)
+			payload.Composer = &composer
+		} else {
+			fmt.Fprintf(os.Stderr, "\nWarning: Failed to encode composer data: %v\n", err)
+		}
+	}
+
+	return payload
 }

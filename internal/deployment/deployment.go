@@ -30,11 +30,11 @@ func Run(args []string) error {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "\nWarning: Failed to send telemetry: %v\n", err)
 	} else if response != nil {
-		if url, ok := response["url"].(string); ok && url != "" {
-			fmt.Fprintf(os.Stderr, "\nDeployment URL: %s\n", url)
+		if response.URL != "" {
+			fmt.Fprintf(os.Stderr, "\nDeployment URL: %s\n", response.URL)
 		}
-		if deploymentID, ok := response["deployment_id"].(string); ok && deploymentID != "" {
-			fmt.Fprintf(os.Stderr, "Deployment ID: %s\n", deploymentID)
+		if response.DeploymentId != 0 {
+			fmt.Fprintf(os.Stderr, "Deployment ID: %d\n", response.DeploymentId)
 		}
 	}
 
