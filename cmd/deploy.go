@@ -19,6 +19,10 @@ var deployCmd = &cobra.Command{
 			return fmt.Errorf("SHOPMON_API_KEY environment variable must be set to use this command")
 		}
 
+		if deployment.EnvironmentID() == 0 {
+			return fmt.Errorf("SHOPMON_ENVIRONMENT_ID environment variable must be set to use this command")
+		}
+
 		return deployment.Run(args)
 	},
 }
