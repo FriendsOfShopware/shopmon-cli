@@ -3,7 +3,7 @@ module github.com/friendsofshopware/shopmon-cli
 go 1.26
 
 require (
-	github.com/klauspost/compress v1.18.4
+	github.com/klauspost/compress v1.18.7
 	github.com/spf13/cobra v1.10.2
 )
 
